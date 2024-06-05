@@ -7,6 +7,8 @@ defmodule SmartCookbookWeb.Router do
 
   scope "/api", SmartCookbookWeb do
     pipe_through :api
+
+    post "/gen_recipes", RecipesController, :gen_recipes
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
