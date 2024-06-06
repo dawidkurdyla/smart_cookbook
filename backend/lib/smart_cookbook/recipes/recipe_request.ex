@@ -2,15 +2,14 @@ defmodule SmartCookbook.Recipes.RecipeRequest do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @dish_types ~w(Breakfast Lunch Dinner Snack)a
-
+  @dish_types [:breakfast, :lunch, :snack]
   embedded_schema do
-    field :cuisine_type, {:array, :string}
+    field :cuisine_type, {:array, :string}, default: []
     field :dish_type, Ecto.Enum, values: @dish_types
-    field :allergies, {:array, :string}
-    field :number_of_recipes, :integer
+    field :allergies, {:array, :string}, default: []
+    field :number_of_recipes, :integer, default: 3
     field :calories, :integer
-    field :max_preparation_time, :integer
+    field :max_preparation_time, :string
     field :custom, :string
   end
 

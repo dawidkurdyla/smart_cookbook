@@ -3,25 +3,36 @@ defmodule SmartCookbookWeb.RecipesController do
 
   alias SmartCookbook.Recipes
   alias SmartCookbook.Recipes.RecipeRequest
-  alias SmartCookbookWeb.RecipesJSON
 
-  def gen_recipes(conn, request_params) do
-    recipe_request = RecipeRequest.changeset(%RecipeRequest{}, request_params)
+  action_fallback SmartCookbookWeb.FallbackController
 
-    if recipe_request.valid? do
+  def generate(conn, request_params) do
+    changeset = RecipeRequest.changeset(%RecipeRequest{}, request_params)
+
+    if changeset.valid? do
+      recipe_request = Ecto.Changeset.apply_changes(changeset)
+
       case Recipes.gen_recipes(recipe_request) do
         {:ok, recipes} ->
-          json(conn, RecipesJSON.index(%{recipes: recipes}))
-        {:error, reason} ->
-          conn
-          |> put_status(:bad_request)
-          |> json(%{error: reason})
+          render(conn, :index, recipes: recipes)
       end
     else
-      conn
-      |> put_status(:unprocessable_entity)
-      |> json(%{errors: recipe_request.errors})
+      {:error, :unprocessable_entity, changeset}
     end
+  end
 
+  def test_generate(conn, request_params) do
+    changeset = RecipeRequest.changeset(%RecipeRequest{}, request_params)
+
+    if changeset.valid? do
+      recipe_request = Ecto.Changeset.apply_changes(changeset)
+
+      case Recipes.test_gen_recipes(recipe_request) do
+        {:ok, recipes} ->
+          render(conn, :index, recipes: recipes)
+      end
+    else
+      {:error, :unprocessable_entity, changeset}
+    end
   end
 end

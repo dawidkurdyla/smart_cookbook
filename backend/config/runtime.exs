@@ -50,6 +50,10 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :openai, OpenAI.Config,
+    api_url: "http://localhost:2137",
+    api_key: "api-key"
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

@@ -3,10 +3,11 @@ defmodule SmartCookbook.Recipes.RecipeResponse do
   import Ecto.Changeset
 
   embedded_schema do
+    field :name, :string
     field :ingredients, {:array, :string}
-    field :execution_time, :integer
+    field :execution_time, :string
     field :calories, :integer
-    field :instructions, :string
+    field :instructions, {:array, :string}
   end
 
   @doc false

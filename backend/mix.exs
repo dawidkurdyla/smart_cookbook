@@ -44,7 +44,8 @@ defmodule SmartCookbook.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
       {:openai, "~> 0.5.2"},
-      {:ai, "~> 0.3.4"}
+      {:ai, "~> 0.3.4"},
+      {:httpoison, "~> 2.0"}
     ]
   end
 

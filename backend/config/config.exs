@@ -38,6 +38,11 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# OpenAI api wrapper config
+config :openai, OpenAI,
+  api_key: "lm-studio",
+  base_url: "http://localhost:2137/v1"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
