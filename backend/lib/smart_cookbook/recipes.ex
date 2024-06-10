@@ -153,26 +153,68 @@ defmodule SmartCookbook.Recipes do
 
 
   def test_gen_recipes(%RecipeRequest{} = request) do
-    {:ok, [%RecipeResponse{
-    name: "Tomato Basil Bruschetta",
-    ingredients: [
-        "4 ripe tomatoes",
-        "1/4 cup fresh basil leaves",
-        "2 cloves garlic",
-        "1 tablespoon olive oil",
-        "1 baguette",
-        "Salt and pepper to taste"
-    ],
-    execution_time: "15min",
-    calories: 150,
-    instructions: [
-      "1. Dice tomatoes and finely chop basil.",
-      "2. Mince garlic.",
-      "3. Mix tomatoes, basil, garlic, and olive oil in a bowl.",
-      "4. Slice baguette and toast until golden.",
-      "5. Top toasted baguette slices with tomato mixture.",
-      "6. Season with salt and pepper. Serve immediately."
-    ]
-    }]}
+    {:ok, [
+      %RecipeResponse{
+        name: "Tomato Basil Bruschetta",
+        ingredients: [
+            "4 ripe tomatoes",
+            "1/4 cup fresh basil leaves",
+            "2 cloves garlic",
+            "1 tablespoon olive oil",
+            "1 baguette",
+            "Salt and pepper to taste"
+        ],
+        execution_time: "15min",
+        calories: 150,
+        instructions: [
+          "1. Dice tomatoes and finely chop basil.",
+          "2. Mince garlic.",
+          "3. Mix tomatoes, basil, garlic, and olive oil in a bowl.",
+          "4. Slice baguette and toast until golden.",
+          "5. Top toasted baguette slices with tomato mixture.",
+          "6. Season with salt and pepper. Serve immediately."
+        ]
+      },
+      %RecipeResponse{
+        name: "Avocado Toast",
+        ingredients: [
+            "2 ripe avocados",
+            "1 tablespoon lemon juice",
+            "2 slices whole grain bread",
+            "1 teaspoon olive oil",
+            "Salt and pepper to taste",
+            "Red pepper flakes (optional)"
+        ],
+        execution_time: "10min",
+        calories: 200,
+        instructions: [
+          "1. Mash avocados with lemon juice, salt, and pepper.",
+          "2. Toast bread slices until golden.",
+          "3. Spread mashed avocado on toast.",
+          "4. Drizzle with olive oil.",
+          "5. Sprinkle with red pepper flakes if desired. Serve immediately."
+        ]
+      },
+      %RecipeResponse{
+        name: "Caprese Salad",
+        ingredients: [
+            "3 ripe tomatoes",
+            "1 ball fresh mozzarella",
+            "1/4 cup fresh basil leaves",
+            "2 tablespoons olive oil",
+            "1 tablespoon balsamic vinegar",
+            "Salt and pepper to taste"
+        ],
+        execution_time: "10min",
+        calories: 250,
+        instructions: [
+          "1. Slice tomatoes and mozzarella.",
+          "2. Arrange tomato and mozzarella slices alternately on a plate.",
+          "3. Tuck basil leaves between slices.",
+          "4. Drizzle with olive oil and balsamic vinegar.",
+          "5. Season with salt and pepper. Serve immediately."
+        ]
+      }
+    ]}
   end
 end
