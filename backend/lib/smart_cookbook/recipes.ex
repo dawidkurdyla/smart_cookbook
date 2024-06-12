@@ -52,9 +52,7 @@ defmodule SmartCookbook.Recipes do
     }
     """
     |> OpenAI.chat_completion()
-    |>IO.inspect()
     |> Utils.parse_chat()
-    # |> parse_recipes()
   end
 
   defp gen_prompt_msg(%RecipeRequest{} = request) do
@@ -105,40 +103,6 @@ defmodule SmartCookbook.Recipes do
 
 
   def test_gen_recipes(%RecipeRequest{} = request) do
-    ~l"""
-    model: #{@cheap_gpt}
-    system: You are an expert at creating recipes. Based on provided preferences create recipe(s) matching all requirements. Be precise and follow the example to match the response format. For each ingredient, add expected calories and use them in caluclations. Return as a JSON.
-    user: #{gen_prompt_msg(request)}
-
-    example: {
-      "recipes": [
-        {
-          "name": "Tomato Basil Bruschetta",
-          "ingredients": [
-            "4 ripe tomatoes (88 kcal)",
-            "1/4 cup fresh basil leaves (1 kcal)",
-            "2 cloves garlic (8 kcal)",
-            "1 tablespoon olive oil (120 kcal)",
-            "1 baguette (880 kcal)",
-            "Salt and pepper to taste (0 kcal)"
-          ],
-          "execution_time": "15 minutes",
-          "calories": 1097,
-          "instructions": [
-            "1. Dice tomatoes and finely chop basil.",
-            "2. Mince garlic.",
-            "3. Mix tomatoes, basil, garlic, and olive oil in a bowl.",
-            "4. Slice baguette and toast until golden.",
-            "5. Top toasted baguette slices with tomato mixture.",
-            "6. Season with salt and pepper. Serve immediately."
-          ]
-        }
-      ]
-    }
-    """
-    |> OpenAI.chat_completion()
-    |> Utils.parse_chat()
-
     {:ok, [
       %RecipeResponse{
         name: "Tomato Basil Bruschetta",
@@ -204,17 +168,11 @@ defmodule SmartCookbook.Recipes do
     ]}
   end
 
-  def mock_response() do
-    {:ok,
- "{\n  \"recipes\": [\n    {\n      \"name\": \"Caprese Skewers\",\n      \"ingredients\": [\n        \"1 pint cherry tomatoes (52 kcal)\",\n        \"8 oz fresh mozzarella balls (448 kcal)\",\n        \"1/4 cup fresh basil leaves (1 kcal)\",\n        \"2 tablespoons balsamic glaze (40 kcal)\",\n        \"Salt and pepper to taste (0 kcal)\",\n        \"8 wooden skewers (0 kcal)\"\n      ],\n      \"execution_time\": \"20 minutes\",\n      \"calories\": 185,\n      \"instructions\": [\n        \"1. Rinse cherry tomatoes and fresh basil leaves.\",\n        \"2. Thread 1 tomato, 1 mozzarella ball, and 1 basil leaf onto each skewer, repeating until each skewer has 4 sets of ingredients.\",\n        \"3. Drizzle balsamic glaze over the skewers.\",\n        \"4. Season with salt and pepper to taste. Serve immediately.\"\n      ]\n    }\n  ]\n}"}
-  end
-
   def parse_recipes({:ok, recipes}) do
     recipes_list = recipes |> Jason.decode!()
 
     parsed_recipes =
       recipes_list["recipes"]
-      |> IO.inspect()
       |> Enum.reduce([], fn recipe, acc ->
         changeset = RecipeResponse.changeset(%RecipeResponse{}, recipe)
         case apply_changes(changeset) do
