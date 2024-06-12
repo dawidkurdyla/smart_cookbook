@@ -8,4 +8,8 @@ defmodule SmartCookbook.Utils do
   end
 
   def parse_chat(_), do: {:error, "Unexpected format"}
+
+  def add_params(prompt, additional_params) do
+    Enum.into(prompt, additional_params)
+  end
 end

@@ -10,8 +10,8 @@ defmodule SmartCookbook.Recipes do
   import AI
 
 
-  @smart_gpt "gpt-4o"
-  @cheap_gpt "gpt-3.5-turbo"
+  @smart_model "gpt-4o"
+  @dumb_model "gpt-3.5-turbo"
 
   def create_recipes(%RecipeRequest{} = request) do
     {:ok, recipes} =
@@ -21,8 +21,8 @@ defmodule SmartCookbook.Recipes do
 
   def gen_recipes(%RecipeRequest{} = request) do
     ~l"""
-    model: #{@cheap_gpt}
-    system: You are an expert at creating recipes. Based on provided preferences create recipe(s) matching all requirements. Be precise and follow the example to match the response format. For each ingredient, add expected calories and use them in caluclations. Return as a JSON.
+    model: #{@smart_model}
+    system: You are an expert at creating recipes. Based on provided preferences create recipe(s) matching all requirements. Be precise and follow the example to match the response format. For each ingredient, add expected calories and use them in caluclations to match the requirements. Return as a JSON.
     user: #{gen_prompt_msg(request)}
 
     example: {
@@ -51,6 +51,7 @@ defmodule SmartCookbook.Recipes do
       ]
     }
     """
+    |> Utils.add_params([response_format: %{type: "json_object" }])
     |> OpenAI.chat_completion()
     |> Utils.parse_chat()
   end
@@ -60,6 +61,7 @@ defmodule SmartCookbook.Recipes do
     |> add_cuisine_type(request.cuisine_type)
     |> add_allergies(request.allergies)
     |> add_calories(request.calories)
+    |> add_diet(request.diet)
     |> add_max_preparation_time(request.max_preparation_time)
     |> add_custom(request.custom)
   end
@@ -68,6 +70,14 @@ defmodule SmartCookbook.Recipes do
     case cuisine_type do
       type when is_list(type) and length(type) > 0 ->
         "#{msg} It should be: #{Enum.join(type, " or ")} food"
+      _ -> msg
+    end
+  end
+
+  defp add_diet(msg, diet_type) do
+    case diet_type do
+      diet when is_list(diet) and length(diet) > 0 ->
+        "#{msg} It have to be: #{Enum.join(diet, " and ")}"
       _ -> msg
     end
   end

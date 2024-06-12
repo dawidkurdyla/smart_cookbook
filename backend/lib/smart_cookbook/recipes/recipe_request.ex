@@ -6,7 +6,7 @@ defmodule SmartCookbook.Recipes.RecipeRequest do
   embedded_schema do
     field :dish_type, Ecto.Enum, values: @dish_types
     field :cuisine_type, {:array, :string}, default: []
-    # rodzaj diety
+    field :diet, {:array, :string}, default: []
     field :calories, :integer
     field :max_preparation_time, :string
     field :allergies, {:array, :string}, default: []
@@ -16,7 +16,7 @@ defmodule SmartCookbook.Recipes.RecipeRequest do
 
   def changeset(schema, params) do
     schema
-    |> cast(params, [:cuisine_type, :dish_type, :allergies, :number_of_recipes, :calories, :max_preparation_time, :custom])
+    |> cast(params, [:cuisine_type, :dish_type, :diet, :allergies, :number_of_recipes, :calories, :max_preparation_time, :custom])
     |> validate_inclusion(:dish_type, @dish_types)
   end
 end
