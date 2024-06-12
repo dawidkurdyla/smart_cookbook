@@ -12,7 +12,7 @@ defmodule SmartCookbookWeb.RecipesController do
     if changeset.valid? do
       recipe_request = Ecto.Changeset.apply_changes(changeset)
 
-      case Recipes.gen_recipes(recipe_request) do
+      case Recipes.create_recipes(recipe_request) do
         {:ok, recipes} ->
           render(conn, :index, recipes: recipes)
       end

@@ -1,108 +1,60 @@
 defmodule SmartCookbook.Recipes do
-  alias SmartCookbook.Recipes.RecipeResponse
-  alias SmartCookbook.Recipes.RecipeRequest
-  alias SmartCookbook.Recipes.RecipeParser
-  alias SmartCookbook.OpenAIClient
   @moduledoc """
     The Recipies context
   """
+  alias SmartCookbook.Recipes.RecipeResponse
+  alias SmartCookbook.Recipes.RecipeRequest
+  alias SmartCookbook.Recipes.RecipeParser
+  alias SmartCookbook.Utils
   alias OpenAI
   import AI
 
 
-  # @model "gpt-4"
-  @model "bartowski/Starling-LM-7B-beta-GGUF"
+  @smart_gpt "gpt-4o"
+  @cheap_gpt "gpt-3.5-turbo"
+
+  def create_recipes(%RecipeRequest{} = request) do
+    {:ok, recipes} =
+      gen_recipes(request)
+      |> parse_recipes()
+  end
 
   def gen_recipes(%RecipeRequest{} = request) do
-    # config = Application.get_env(:openai, OpenAI)
-    # IO.inspect("CONFIG OPENAI")
-    # IO.inspect(config)
+    ~l"""
+    model: #{@cheap_gpt}
+    system: You are an expert at creating recipes. Based on provided preferences create recipe(s) matching all requirements. Be precise and follow the example to match the response format. For each ingredient, add expected calories and use them in caluclations. Return as a JSON.
+    user: #{gen_prompt_msg(request)}
 
-    # api_key = Application.get_env(:openai, OpenAI)[:api_key]
-    # base_url = Application.get_env(:openai, OpenAI)[:base_url]
-
-    # headers = [
-    #   {"Authorization", "Bearer #{api_key}"}
-    # ]
-
-    # IO.inspect(base_url, label: "Base URL")
-    # IO.inspect(headers, label: "Headers")
-
-    # OpenAI.chat_completion(
-    #   %{
-    #     model: "bartowski/Starling-LM-7B-beta-GGUF",
-    #     messages: [%{role: "user", content: "Say HI!", stream: false}]
-    #   },
-    #   headers: headers,
-    #   base_url: base_url
-    # )
-    # OpenAIClient.generate_prompt("HI")
-    # |> IO.inspect()
-
-    # ~l"""
-    #   model: #{@model}
-    #   system: You are an expert at creating recipes. Based on provided preferences create recipe(s) matching all requirements. Be precise and follow the example to match the response format.
-    #   user: #{gen_prompt_msg(request)}
-
-    #   Example
-    #     name:"Tomato Basil Bruschetta",
-    #     ingredients:[
-    #       "4 ripe tomatoes",
-    #       "1/4 cup fresh basil leaves",
-    #       "2 cloves garlic",
-    #       "1 tablespoon olive oil",
-    #       "1 baguette",
-    #       "Salt and pepper to taste"
-    #     ],
-    #     execution_time:15,
-    #     calories:150,
-    #     instructions:[
-    #       "1. Dice tomatoes and finely chop basil.",
-    #       "2. Mince garlic." ,
-    #       "3. Mix tomatoes, basil, garlic, and olive oil in a bowl.",
-    #       "4. Slice baguette and toast until golden.",
-    #       "5. Top toasted baguette slices with tomato mixture.",
-    #       "6. Season with salt and pepper. Serve immediately."
-    #     ]
-    # """
-    recipe = %{
-      system: "You are an expert at creating recipes. Based on provided preferences create recipe(s) matching all requirements. Be precise and follow the example to match the response format.",
-      user: """
-        #{gen_prompt_msg(request)}
-
-        Example
-          name:"Tomato Basil Bruschetta",
-          ingredients:[
-            "4 ripe tomatoes",
-            "1/4 cup fresh basil leaves",
-            "2 cloves garlic",
-            "1 tablespoon olive oil",
-            "1 baguette",
-            "Salt and pepper to taste"
+    example: {
+      "recipes": [
+        {
+          "name": "Tomato Basil Bruschetta",
+          "ingredients": [
+            "4 ripe tomatoes (88 kcal)",
+            "1/4 cup fresh basil leaves (1 kcal)",
+            "2 cloves garlic (8 kcal)",
+            "1 tablespoon olive oil (120 kcal)",
+            "1 baguette (880 kcal)",
+            "Salt and pepper to taste (0 kcal)"
           ],
-          execution_time:15,
-          calories:150,
-          instructions:[
+          "execution_time": "15 minutes",
+          "calories": 1097,
+          "instructions": [
             "1. Dice tomatoes and finely chop basil.",
-            "2. Mince garlic." ,
+            "2. Mince garlic.",
             "3. Mix tomatoes, basil, garlic, and olive oil in a bowl.",
             "4. Slice baguette and toast until golden.",
             "5. Top toasted baguette slices with tomato mixture.",
             "6. Season with salt and pepper. Serve immediately."
           ]
-
-          Answer in JSON format, do not add any additional information or text. Just the JSON with recipe.
-      """
+        }
+      ]
     }
-    |> OpenAIClient.generate_prompt()
-    |> IO.inspect()
-    |> RecipeParser.parse_response()
-    # |> OpenAI.chat_completion()
-    # # |> AI.chat()
-    # |> IO.inspect()
-
-
-    {:ok, recipe}
+    """
+    |> OpenAI.chat_completion()
+    |>IO.inspect()
+    |> Utils.parse_chat()
+    # |> parse_recipes()
   end
 
   defp gen_prompt_msg(%RecipeRequest{} = request) do
@@ -133,7 +85,7 @@ defmodule SmartCookbook.Recipes do
   defp add_calories(msg, calories) do
     case calories do
       nil -> msg
-      calories -> "#{msg} The meal should have around #{calories} kcal per portion"
+      calories -> "#{msg} The meal should have around #{calories} kcal"
     end
   end
 
@@ -153,6 +105,40 @@ defmodule SmartCookbook.Recipes do
 
 
   def test_gen_recipes(%RecipeRequest{} = request) do
+    ~l"""
+    model: #{@cheap_gpt}
+    system: You are an expert at creating recipes. Based on provided preferences create recipe(s) matching all requirements. Be precise and follow the example to match the response format. For each ingredient, add expected calories and use them in caluclations. Return as a JSON.
+    user: #{gen_prompt_msg(request)}
+
+    example: {
+      "recipes": [
+        {
+          "name": "Tomato Basil Bruschetta",
+          "ingredients": [
+            "4 ripe tomatoes (88 kcal)",
+            "1/4 cup fresh basil leaves (1 kcal)",
+            "2 cloves garlic (8 kcal)",
+            "1 tablespoon olive oil (120 kcal)",
+            "1 baguette (880 kcal)",
+            "Salt and pepper to taste (0 kcal)"
+          ],
+          "execution_time": "15 minutes",
+          "calories": 1097,
+          "instructions": [
+            "1. Dice tomatoes and finely chop basil.",
+            "2. Mince garlic.",
+            "3. Mix tomatoes, basil, garlic, and olive oil in a bowl.",
+            "4. Slice baguette and toast until golden.",
+            "5. Top toasted baguette slices with tomato mixture.",
+            "6. Season with salt and pepper. Serve immediately."
+          ]
+        }
+      ]
+    }
+    """
+    |> OpenAI.chat_completion()
+    |> Utils.parse_chat()
+
     {:ok, [
       %RecipeResponse{
         name: "Tomato Basil Bruschetta",
@@ -216,5 +202,37 @@ defmodule SmartCookbook.Recipes do
         ]
       }
     ]}
+  end
+
+  def mock_response() do
+    {:ok,
+ "{\n  \"recipes\": [\n    {\n      \"name\": \"Caprese Skewers\",\n      \"ingredients\": [\n        \"1 pint cherry tomatoes (52 kcal)\",\n        \"8 oz fresh mozzarella balls (448 kcal)\",\n        \"1/4 cup fresh basil leaves (1 kcal)\",\n        \"2 tablespoons balsamic glaze (40 kcal)\",\n        \"Salt and pepper to taste (0 kcal)\",\n        \"8 wooden skewers (0 kcal)\"\n      ],\n      \"execution_time\": \"20 minutes\",\n      \"calories\": 185,\n      \"instructions\": [\n        \"1. Rinse cherry tomatoes and fresh basil leaves.\",\n        \"2. Thread 1 tomato, 1 mozzarella ball, and 1 basil leaf onto each skewer, repeating until each skewer has 4 sets of ingredients.\",\n        \"3. Drizzle balsamic glaze over the skewers.\",\n        \"4. Season with salt and pepper to taste. Serve immediately.\"\n      ]\n    }\n  ]\n}"}
+  end
+
+  def parse_recipes({:ok, recipes}) do
+    recipes_list = recipes |> Jason.decode!()
+
+    parsed_recipes =
+      recipes_list["recipes"]
+      |> IO.inspect()
+      |> Enum.reduce([], fn recipe, acc ->
+        changeset = RecipeResponse.changeset(%RecipeResponse{}, recipe)
+        case apply_changes(changeset) do
+          %RecipeResponse{} = valid_recipe ->
+            [valid_recipe | acc]
+          _ ->
+            acc
+        end
+      end)
+
+    {:ok, parsed_recipes}
+  end
+
+  defp apply_changes(changeset) do
+    if changeset.valid? do
+      Ecto.Changeset.apply_changes(changeset)
+    else
+      :invalid
+    end
   end
 end

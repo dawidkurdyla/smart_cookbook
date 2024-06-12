@@ -13,7 +13,7 @@ defmodule SmartCookbook.Recipes.RecipeResponse do
   @doc false
   def changeset(recipe, attrs) do
     recipe
-    |> cast(attrs, [:ingredients, :execution_time, :calories, :instructions])
-    |> validate_required([:ingredients, :execution_time, :calories, :instructions])
+    |> cast(attrs, [:name, :ingredients, :execution_time, :calories, :instructions])
+    |> validate_required([:name, :ingredients, :execution_time, :calories, :instructions])
   end
 end

@@ -17,6 +17,7 @@ defmodule SmartCookbookWeb.RecipesJSON do
 
   defp data(%RecipeResponse{} = recipe) do
     %{
+      name: recipe.name,
       ingredients: recipe.ingredients,
       execution_time: recipe.execution_time,
       calories: recipe.calories,

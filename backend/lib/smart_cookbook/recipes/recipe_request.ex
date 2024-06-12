@@ -4,12 +4,13 @@ defmodule SmartCookbook.Recipes.RecipeRequest do
 
   @dish_types [:breakfast, :lunch, :snack]
   embedded_schema do
-    field :cuisine_type, {:array, :string}, default: []
     field :dish_type, Ecto.Enum, values: @dish_types
-    field :allergies, {:array, :string}, default: []
-    field :number_of_recipes, :integer, default: 3
+    field :cuisine_type, {:array, :string}, default: []
+    # rodzaj diety
     field :calories, :integer
     field :max_preparation_time, :string
+    field :allergies, {:array, :string}, default: []
+    field :number_of_recipes, :integer, default: 3
     field :custom, :string
   end
 
