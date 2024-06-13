@@ -3,7 +3,7 @@ defmodule SmartCookbook.Recipes do
     The Recipies context
   """
   alias SmartCookbook.Recipes.RecipeResponse
-  alias SmartCookbook.Recipes.RecipeRequest
+  alias SmartCookbook.Recipes.{GenRecipeRequest, UpdateRecipeRequest}
   alias SmartCookbook.Recipes.RecipeParser
   alias SmartCookbook.Utils
   alias OpenAI
@@ -13,16 +13,28 @@ defmodule SmartCookbook.Recipes do
   @smart_model "gpt-4o"
   @dumb_model "gpt-3.5-turbo"
 
-  def create_recipes(%RecipeRequest{} = request) do
+  def create_recipes(%GenRecipeRequest{} = request) do
     {:ok, recipes} =
-      gen_recipes(request)
+      gen_recipes_with_ai(request)
       |> parse_recipes()
   end
 
-  def gen_recipes(%RecipeRequest{} = request) do
+  def update_recipe(%UpdateRecipeRequest{} = request) do
+    {:ok, recipe} =
+      update_recipe_with_ai(request)
+      |> parse_recipe()
+  end
+
+  defp gen_recipes_with_ai(%GenRecipeRequest{} = request) do
     ~l"""
     model: #{@smart_model}
-    system: You are an expert at creating recipes. Based on provided preferences create recipe(s) matching all requirements. Be precise and follow the example to match the response format. For each ingredient, add expected calories and use them in caluclations to match the requirements. Return as a JSON.
+
+    system: You are an expert at creating recipes. Based on provided preferences create recipe(s) matching all requirements.
+            Be precise and follow the example to match the response format.
+            For each ingredient, add expected calories and use them in caluclations. Be sure to match calories requirements if provided.
+            Regardless of the prompt andlanguage, answer in #{request.language}. Translate the recipe if needed.
+            Response format: JSON.
+
     user: #{gen_prompt_msg(request)}
 
     example: {
@@ -37,8 +49,8 @@ defmodule SmartCookbook.Recipes do
             "1 baguette (880 kcal)",
             "Salt and pepper to taste (0 kcal)"
           ],
-          "execution_time": "15 minutes",
-          "calories": 1097,
+          "execution_time": "15 minutes" (give the time in requested language),
+          "calories": 1097 (calculate based on the ingredients),
           "instructions": [
             "1. Dice tomatoes and finely chop basil.",
             "2. Mince garlic.",
@@ -56,7 +68,49 @@ defmodule SmartCookbook.Recipes do
     |> Utils.parse_chat()
   end
 
-  defp gen_prompt_msg(%RecipeRequest{} = request) do
+  defp update_recipe_with_ai(%UpdateRecipeRequest{} = request) do
+    ~l"""
+    model: #{@smart_model}
+
+    system: You are an expert culinary advisor.
+            You are capable of adapting recipes to fit instructions/requirements (like available ingredients) while keeping the final dish as close to the original as possible.
+            Your task is to provide users with substitute ingredients and modify cooking instructions accordingly.
+            Always consider the flavor, texture, and cooking properties of the substitutes to ensure the dish remains delicious and true to its intended character.
+            Regardless of the prompt language, answer in #{request.language}.
+            Response format: JSON.
+
+    user: Current recipe: #{request.recipe}. Instructions: #{request.instructions}
+
+    example response format (when user don't have baguette):
+        {
+          "name": "Tomato Basil Bruschetta",
+          "ingredients": [
+            "4 ripe tomatoes (88 kcal)",
+            "1/4 cup fresh basil leaves (1 kcal)",
+            "2 cloves garlic (8 kcal)",
+            "1 tablespoon olive oil (120 kcal)",
+            "3 bread slices (240 kcal)",
+            "Salt and pepper to taste (0 kcal)"
+          ],
+          "execution_time": "15 minutes" (give the time in requested language),
+          "calories": 449 (calculate based on the ingredients),
+          "instructions": [
+            "1. Dice tomatoes and finely chop basil.",
+            "2. Mince garlic.",
+            "3. Mix tomatoes, basil, garlic, and olive oil in a bowl.",
+            "4. Toast bread slices until golden.",
+            "5. Top toasted bread slices with tomato mixture.",
+            "6. Season with salt and pepper. Serve immediately."
+          ],
+          "change_desc": "Instead of baguette, you can use tosted bread slices"
+        }
+    """
+    |> Utils.add_params([response_format: %{type: "json_object" }])
+    |> OpenAI.chat_completion()
+    |> Utils.parse_chat()
+  end
+
+  defp gen_prompt_msg(%GenRecipeRequest{} = request) do
     "Create #{request.number_of_recipes} recipes for #{request.dish_type}."
     |> add_cuisine_type(request.cuisine_type)
     |> add_allergies(request.allergies)
@@ -111,8 +165,7 @@ defmodule SmartCookbook.Recipes do
     end
   end
 
-
-  def test_gen_recipes(%RecipeRequest{} = request) do
+  def test_gen_recipes(%GenRecipeRequest{} = request) do
     {:ok, [
       %RecipeResponse{
         name: "Tomato Basil Bruschetta",
@@ -179,7 +232,7 @@ defmodule SmartCookbook.Recipes do
   end
 
   def parse_recipes({:ok, recipes}) do
-    recipes_list = recipes |> Jason.decode!()
+    recipes_list = Jason.decode!(recipes)
 
     parsed_recipes =
       recipes_list["recipes"]
@@ -194,6 +247,21 @@ defmodule SmartCookbook.Recipes do
       end)
 
     {:ok, parsed_recipes}
+  end
+
+  def parse_recipe({:ok, recipe}) do
+    # changeset =
+    #   recipe
+    #   |> Jason.decode!()
+    #   |> RecipeResponse.changeset(%RecipeResponse{})
+
+    changeset = RecipeResponse.changeset(%RecipeResponse{}, Jason.decode!(recipe))
+
+    if changeset.valid? do
+      {:ok, Ecto.Changeset.apply_changes(changeset)}
+    else
+      {:error, :unprocessable_entity, changeset}
+    end
   end
 
   defp apply_changes(changeset) do

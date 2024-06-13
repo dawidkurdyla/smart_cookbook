@@ -22,6 +22,7 @@ defmodule SmartCookbookWeb.RecipesJSON do
       execution_time: recipe.execution_time,
       calories: recipe.calories,
       instructions: recipe.instructions,
+      change_desc: recipe.change_desc,
     }
   end
 end

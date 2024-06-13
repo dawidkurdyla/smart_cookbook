@@ -10,6 +10,7 @@ defmodule SmartCookbookWeb.Router do
 
     post "/recipes/generate", RecipesController, :generate
     post "/recipes/test_generate", RecipesController, :test_generate
+    post "/recipes/update", RecipesController, :update
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
