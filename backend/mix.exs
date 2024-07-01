@@ -45,7 +45,8 @@ defmodule SmartCookbook.MixProject do
       {:bandit, "~> 1.2"},
       {:openai, "~> 0.5.2"},
       {:ai, "~> 0.3.4"},
-      {:httpoison, "~> 2.0"}
+      {:httpoison, "~> 2.0"},
+      {:cors_plug, "~> 2.0"}
     ]
   end
 

@@ -3,6 +3,7 @@ defmodule SmartCookbookWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug CORSPlug
   end
 
   scope "/api", SmartCookbookWeb do
@@ -30,3 +31,5 @@ defmodule SmartCookbookWeb.Router do
     end
   end
 end
+
+

@@ -4,7 +4,6 @@ import Config
 # you can enable the server option below.
 config :smart_cookbook, SmartCookbookWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "BCc99Rgmo0jb7HWLdgBDNl71Yi+cP9v8VbHl538VW3uaNNK5WRqCqkzKmvYMToxK",
   server: false
 
 # In test we don't send emails.

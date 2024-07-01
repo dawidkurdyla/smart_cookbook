@@ -39,9 +39,9 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 # OpenAI api wrapper config
-config :openai, OpenAI,
-  api_key: "lm-studio",
-  base_url: "http://localhost:2137/v1"
+config :openai,
+  api_key: System.get_env("OPENAI_API_KEY"),
+  http_options: [recv_timeout: 30_000]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

@@ -147,6 +147,7 @@ defmodule SmartCookbook.Recipes do
   defp add_calories(msg, calories) do
     case calories do
       nil -> msg
+      0 -> msg
       calories -> "#{msg} The meal should have around #{calories} kcal"
     end
   end
